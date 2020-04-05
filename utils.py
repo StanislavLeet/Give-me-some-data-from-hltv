@@ -7,26 +7,25 @@ from tqdm.auto import tqdm
 
 
 
-def GimeMeMatchLinks(url):
-    """
-    Функция возвращающая все ссылки на странице
-    url - url адресс страницы
-    """
+def get_match_links(url):
+    """Функция возвращающая все ссылки на странице
+    url - url адресс страницы"""
+
     r = requests.get(url)
     page = r.text
     tree = html.fromstring(page)
     return [k for k in tree.xpath('//a/@href') if 'matches/' in k]
 
 
-def GiveMeMatches(url):
-    """
-    Функция возвращает адресса страниц матчей встречи 
+def get_matches(url):
+    """Функция возвращает адресса страниц матчей встречи 
     url - адресс встречи
     """
+
     mapstat = []
     k = 0
     while len(mapstat) == 0:
-        mapstat = [k for k in GimeMeMatchLinks(url) if 'mapstatsid' in k]
+        mapstat = [k for k in get_match_links(url) if 'mapstatsid' in k]
         time.sleep(10)
         k += 1
         if k == 10:
@@ -34,9 +33,8 @@ def GiveMeMatches(url):
         
     return mapstat
 
-def ParseStandardBoxTeam1Side(half_history):
-    """
-    Функция получения стороны первой команды из round history box
+def parse_StandardBox_team1_Side(half_history):
+    """Функция получения стороны первой команды из round history box
     fhalf_history - набор иконок первой стороны
     """
 
@@ -47,9 +45,8 @@ def ParseStandardBoxTeam1Side(half_history):
             return False
 
 
-def ParseStandardBox(StandardBox):
-    """
-    Функция получения данных из round history box
+def parse_StandardBox(StandardBox):
+    """Функция получения данных из round history box
     StandardBox - round history box
     """
     # 1. Нам достаточно только результатов одной из команд 
@@ -85,10 +82,10 @@ def ParseStandardBox(StandardBox):
                 CT_score += 1
                 side_score += ['F(R)']
     
-    return CT_score, T_score, ParseStandardBoxTeam1Side(fhalf_history), side_score
+    return CT_score, T_score, parse_StandardBox_team1_Side(fhalf_history), side_score
 
 
-def GiveMeMap(page):
+def get_map(page):
     """
     Функция возвращающая карту встречи
     page - текст страницы
@@ -106,7 +103,7 @@ def GiveMeMap(page):
             return key
 
 
-def GivePage(url):
+def get_page(url):
     """
     Получение текста страницы
     url - url страницы
@@ -136,18 +133,20 @@ def GivePage(url):
     return page
 
 
-def GiveInfoFromMatch(url, stat):
-    """
-    Получение информации из страницы
+def get_info_from_match(url, stat):
+    """Получение информации из страницы матча:
+    наименование команд, счет игры, карта, 
+    последовательность выигранных раундов
     url - url матча
+    stat - ссылка с главной страницы
     """
-    page = GivePage(url)
+    page = get_page(url)
     
     if page == '':
         return dict()
             
     page_with_score = page.split('standard-box round-history-con')[1]
-    T1, T2, firstCT, side_score = ParseStandardBox(page_with_score)
+    T1, T2, firstCT, side_score = parse_StandardBox(page_with_score)
         
         
     inf_dict = dict()
@@ -156,7 +155,7 @@ def GiveInfoFromMatch(url, stat):
     inf_dict['Team 1 score'] = T1
     inf_dict['Team 2 score'] = T2
     inf_dict['First CT'] = firstCT
-    inf_dict['map'] = GiveMeMap(page)
+    inf_dict['map'] = get_map(page)
     inf_dict['side dynamic'] = side_score
         
     return inf_dict
