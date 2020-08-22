@@ -13,8 +13,8 @@ option = webdriver.ChromeOptions()
 option.add_argument("--incognito")
 option.add_argument('--headless')
 option.add_argument('--no-sandbox')
-option.add_argument('--disable-dev-shm-usage', chrome_options = option)
-driver = webdriver.Chrome(executable_path=DRIVER_PATH)
+option.add_argument('--disable-dev-shm-usage')
+driver = webdriver.Chrome(executable_path=DRIVER_PATH, chrome_options = option)
 
 
 links_to_matches = []
