@@ -7,17 +7,18 @@ from tqdm.auto import tqdm
 
 
 
-def get_match_links(url):
+def get_match_links(url, driver):
     """Функция возвращающая все ссылки на странице
     url - url адресс страницы"""
 
-    r = requests.get(url)
-    page = r.text
+
+    driver.get(url)
+    page = driver.page_source
     tree = html.fromstring(page)
     return [k for k in tree.xpath('//a/@href') if 'matches/' in k]
 
 
-def get_matches(url):
+def get_matches(url, driver):
     """Функция возвращает адресса страниц матчей встречи 
     url - адресс встречи
     """
@@ -25,7 +26,7 @@ def get_matches(url):
     mapstat = []
     k = 0
     while len(mapstat) == 0:
-        mapstat = [k for k in get_match_links(url) if 'mapstatsid' in k]
+        mapstat = [k for k in get_match_links(url, driver) if 'mapstatsid' in k]
         time.sleep(10)
         k += 1
         if k == 10:
@@ -103,15 +104,15 @@ def get_map(page):
             return key
 
 
-def get_page(url):
+def get_page(url, driver):
     """
     Получение текста страницы
     url - url страницы
     """
     
     try:
-        r = requests.get(url)
-        page = r.text
+        driver.get(url)
+        page = driver.page_source
     except:
         page = ''
        
@@ -119,8 +120,8 @@ def get_page(url):
     while len(page) < 5000:
         
         try:
-            r = requests.get(url)
-            page = r.text
+            driver.get(url)
+            page = driver.page_source
         except:
             page = ''
             
@@ -133,14 +134,14 @@ def get_page(url):
     return page
 
 
-def get_info_from_match(url, stat):
+def get_info_from_match(url, stat, driver):
     """Получение информации из страницы матча:
     наименование команд, счет игры, карта, 
     последовательность выигранных раундов
     url - url матча
     stat - ссылка с главной страницы
     """
-    page = get_page(url)
+    page = get_page(url, driver)
     
     if page == '':
         return dict()
